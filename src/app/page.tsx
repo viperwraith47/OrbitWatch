@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Orbit, Satellite as SatelliteIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Globe2, List, Orbit, Satellite as SatelliteIcon } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { useToast } from "@/hooks/use-toast";
 import type { PassesResponse } from "@/lib/sat/types";
@@ -9,6 +10,18 @@ import { LocationCard } from "@/components/predictor/location-card";
 import { SatelliteCard } from "@/components/predictor/satellite-card";
 import { SettingsCard } from "@/components/predictor/settings-card";
 import { ResultsPanel } from "@/components/predictor/results-panel";
+
+// three.js + satellite.js only load when the globe tab is first opened
+const GlobePanel = dynamic(() => import("@/components/predictor/globe/globe-panel").then((m) => m.GlobePanel), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[380px] items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900/40 text-sm text-zinc-500" aria-busy="true">
+      Loading 3D globe…
+    </div>
+  ),
+});
+
+type ViewMode = "passes" | "globe";
 
 function LiveClock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -43,6 +56,8 @@ export default function Home() {
   const [data, setData] = useState<PassesResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<ViewMode>("passes");
+  const [globeOpened, setGlobeOpened] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -119,7 +134,43 @@ export default function Home() {
               <SettingsCard onPredict={runPrediction} loading={loading} />
             </div>
             <div className="min-w-0 lg:col-span-8 xl:col-span-9">
-              <ResultsPanel data={data} loading={loading} error={error} onRetry={runPrediction} />
+              <div
+                role="tablist"
+                aria-label="View mode"
+                className="mb-4 inline-flex overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/60 p-1"
+              >
+                {(
+                  [
+                    ["passes", "Passes", List],
+                    ["globe", "3D Globe", Globe2],
+                  ] as const
+                ).map(([key, label, Icon]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={view === key}
+                    onClick={() => {
+                      setView(key);
+                      if (key === "globe") setGlobeOpened(true);
+                    }}
+                    className={`inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors ${
+                      view === key ? "bg-amber-500 text-zinc-950 shadow" : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                  >
+                    <Icon aria-hidden className="h-3.5 w-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className={view === "passes" ? "" : "hidden"}>
+                <ResultsPanel data={data} loading={loading} error={error} onRetry={runPrediction} />
+              </div>
+              {globeOpened && (
+                <div className={view === "globe" ? "" : "hidden"}>
+                  <GlobePanel />
+                </div>
+              )}
             </div>
           </div>
         )}

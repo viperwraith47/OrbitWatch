@@ -1,0 +1,20 @@
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index a0e552a1b9c3f8568608b846395b2c1197bb4435..535c3347110bdf8e103244d22d0f2c901585cb92 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -10,4 +10,4 @@ export { sunPos } from './sun.js';
+ export * from './shadow.js';
+ export { type SatRec, SatRecError } from './propagation/SatRec.js';
+ export * from './common-types.js';
+-export * from './wasm/index.js';
++
+diff --git a/dist/index.js b/dist/index.js
+index 52d5e63dd113ed78978b6f88c1335ca39690300e..e590ffa0ead5b30cce9258e9f9dcf86d52889108 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -10,4 +10,4 @@ export { sunPos } from './sun.js';
+ export * from './shadow.js';
+ export { SatRecError } from './propagation/SatRec.js';
+ export * from './common-types.js';
+-export * from './wasm/index.js';
++
